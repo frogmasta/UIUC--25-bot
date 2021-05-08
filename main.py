@@ -11,8 +11,9 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 # Create bot client
+intents = discord.Intents.all()
 activity = discord.Activity(type=discord.ActivityType.listening, name="i~")
-bot = commands.Bot(command_prefix='i~', activity=activity, status=discord.Status.online)
+bot = commands.Bot(command_prefix='i~', activity=activity, status=discord.Status.online, intents=intents)
 
 
 # Tells when bot is ready
