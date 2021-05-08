@@ -21,20 +21,26 @@ async def on_ready():
     print("Ready!")
 
 
+# Calls every message
 @bot.event
 async def on_message(message):
-    if message.author == bot.user:
+    # Don't call if message written by a bot
+    if message.author.bot:
         return
 
+    # Copypasta handler
     contents = message.content.split()
-
     for word in contents:
         if word.lower() in copypasta_dict or word in copypasta_dict:
             try:
-                return await message.channel.send(copypasta_dict[word.lower()])
+                msg_parts = copypasta_dict[word.lower()].split('\n')
             except KeyError:
-                return await message.channel.send(copypasta_dict[word])
+                msg_parts = copypasta_dict[word].split('\n')
 
+            for part in msg_parts:
+                await message.channel.send(part)
+
+    # Process other commands if applicable
     await bot.process_commands(message)
 
 

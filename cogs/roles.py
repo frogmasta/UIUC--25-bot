@@ -61,10 +61,14 @@ class RoleManager(commands.Cog):
         menu = RoleMenu()
         await menu.start(ctx)
 
-        # await ctx.send('Roles names can be found here ⬇️:\nhttps://myillini.illinois.edu/Programs')
-
     async def find_closest_match(self, ctx, role_name):
         close_matches = difflib.get_close_matches(role_name, roles)
+
+        def checkmsg(m):
+            if m.content.lower() in ["stop", "s", "no", "n", "yes", "y"] and m.author == ctx.message.author:
+                return True
+
+            return False
 
         for match_idx in range(0, 3):
             if match_idx >= len(close_matches):
@@ -89,14 +93,6 @@ class RoleManager(commands.Cog):
             return await ctx.send("You need the Kingfishers or Big Fish role to use major role commands!")
 
         raise error
-
-
-def checkmsg(m):
-    for response in ["stop", "s", "no", "n", "yes", "y"]:
-        if m.content.lower() == response:
-            return True
-
-    return False
 
 
 def setup(bot):
