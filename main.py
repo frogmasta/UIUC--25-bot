@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 import discord
 from discord.ext import commands
@@ -59,7 +60,8 @@ async def on_command_error(ctx, error):
 
 
 # Load extensions/cogs
-for cog in os.listdir('./cogs'):
+path = pathlib.Path(__file__).parent
+for cog in os.listdir(path / "cogs"):
     if cog.endswith('.py'):
         try:
             bot.load_extension('cogs.' + cog.removesuffix('.py'))
