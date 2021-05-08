@@ -3,15 +3,13 @@ import math
 import discord
 from discord.ext import menus
 
-from src.role_list import roles
-
 
 class RoleMenu(menus.Menu):
-    def __init__(self):
+    def __init__(self, title, data):
         super().__init__()
 
-        self.title = "Roles List"
-        self.data = roles
+        self.title = title
+        self.data = data
 
         self._embed = None
         self._page = 1
@@ -19,9 +17,9 @@ class RoleMenu(menus.Menu):
 
     async def send_initial_message(self, ctx, channel):
         icon = ctx.message.author.avatar_url
-        role_list = self.generate_role_list()
+        data_list = self.generate_data_list()
 
-        embed = discord.Embed(title=self.title, description=role_list, color=0xFF4500)
+        embed = discord.Embed(title=self.title, description=data_list, color=0xFF4500)
         embed.set_footer(text=f"Page {self._page}/{self._maxPages}", icon_url=icon)
 
         self._embed = embed
@@ -40,7 +38,7 @@ class RoleMenu(menus.Menu):
 
         if 1 <= self._page + increment <= self._maxPages:
             self._page += increment
-            role_list = self.generate_role_list()
+            role_list = self.generate_data_list()
 
             embed = discord.Embed(title=self.title, description=role_list, color=0xFF4500)
             embed.set_footer(text=f"Page {self._page}/{self._maxPages}", icon_url=icon)
@@ -48,14 +46,18 @@ class RoleMenu(menus.Menu):
             self._embed = embed
             await self.message.edit(embed=self._embed)
 
-    def generate_role_list(self):
-        role_list = ""
+    def generate_data_list(self):
+        data_list = ""
 
         start_idx = (self._page - 1) * 10
         for idx in range(start_idx, start_idx + 10):
             try:
-                role_list += f"{roles[idx]} \n\n"
+                if isinstance(self.data, list):
+                    data_list += f"{self.data[idx]} \n\n"
+                elif isinstance(self.data, dict):
+                    keys = sorted(list(self.data.keys()), key=lambda k: self.data[k], reverse=True)
+                    data_list += f"{keys[idx]} - {self.data[keys[idx]]} \n\n"
             except IndexError:
                 break
 
-        return role_list
+        return data_list

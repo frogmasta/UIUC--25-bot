@@ -5,8 +5,8 @@ import discord
 from discord import utils
 from discord.ext import commands
 
-from src.role_list import roles
-from src.role_menu import RoleMenu
+from src.BasicMenu import RoleMenu
+from src.role_list import role_names
 
 
 class RoleManager(commands.Cog):
@@ -18,7 +18,7 @@ class RoleManager(commands.Cog):
     async def assign(self, ctx, *, role_name):
         role = utils.get(ctx.guild.roles, name=role_name)
 
-        if role and role.name not in roles:
+        if role and role.name not in role_names:
             return await ctx.send("I cannot assign this role!")
         elif not role:
             response = await self.find_closest_match(ctx, role_name)
@@ -42,7 +42,7 @@ class RoleManager(commands.Cog):
     async def unassign(self, ctx, *, role_name):
         role = utils.get(ctx.guild.roles, name=role_name)
 
-        if role and role.name not in roles:
+        if role and role.name not in role_names:
             return await ctx.send("I cannot remove this role!")
         elif not role:
             response = await self.find_closest_match(ctx, role_name)
@@ -63,11 +63,17 @@ class RoleManager(commands.Cog):
 
     @commands.command(aliases=['roles'])
     async def majors(self, ctx):
-        menu = RoleMenu()
+        menu = RoleMenu("Majors", role_names)
+        await menu.start(ctx)
+
+    @commands.command()
+    async def stats(self, ctx):
+        role_count = get_role_count(ctx)
+        menu = RoleMenu("Major Statistics", role_count)
         await menu.start(ctx)
 
     async def find_closest_match(self, ctx, role_name):
-        close_matches = difflib.get_close_matches(role_name, roles)
+        close_matches = difflib.get_close_matches(role_name, role_names)
 
         def checkmsg(m):
             if m.content.lower() in ["stop", "s", "no", "n", "yes", "y"] and m.author == ctx.message.author:
@@ -101,6 +107,19 @@ class RoleManager(commands.Cog):
             return await ctx.send("You need the Kingfishers or Big Fish role to use major role commands!")
 
         raise error
+
+
+def get_role_count(ctx):
+    role_count = {}
+
+    for member in ctx.guild.members:
+        for role in member.roles:
+            if role.name in role_names and role in role_count:
+                role_count[role] += 1
+            elif role.name in role_names:
+                role_count[role] = 1
+
+    return role_count
 
 
 def setup(bot):
