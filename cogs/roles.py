@@ -1,3 +1,4 @@
+import asyncio
 import difflib
 
 import discord
@@ -12,19 +13,21 @@ class RoleManager(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(aliases=['add'])
     @commands.has_any_role("Kingfishers", "Big Fish")
     async def assign(self, ctx, *, role_name):
         role = utils.get(ctx.guild.roles, name=role_name)
 
         if role and role.name not in roles:
             return await ctx.send("I cannot assign this role!")
-        if not role:
-            role = await self.find_closest_match(ctx, role_name)
+        elif not role:
+            response = await self.find_closest_match(ctx, role_name)
 
-        if not role:
-            return await ctx.send("Could not find a close match. Please try again.")
-        elif role in ctx.message.author.roles:
+            if not isinstance(response, discord.Role):
+                return await ctx.send(response)
+            role = response
+
+        if role in ctx.message.author.roles:
             return await ctx.send("You already have that role!")
 
         try:
@@ -32,21 +35,23 @@ class RoleManager(commands.Cog):
         except discord.Forbidden:
             return await ctx.send("I do not have the permission to add that role!")
 
-        await ctx.send("Role change successful.")
+        await ctx.send("Role change successful!")
 
-    @commands.command()
+    @commands.command(aliases=['remove'])
     @commands.has_any_role("Kingfishers", "Big Fish")
-    async def remove(self, ctx, *, role_name):
+    async def unassign(self, ctx, *, role_name):
         role = utils.get(ctx.guild.roles, name=role_name)
 
         if role and role.name not in roles:
             return await ctx.send("I cannot remove this role!")
-        if not role:
-            role = await self.find_closest_match(ctx, role_name)
+        elif not role:
+            response = await self.find_closest_match(ctx, role_name)
 
-        if not role:
-            return await ctx.send("Could not find a close match. Please try again.")
-        elif role not in ctx.message.author.roles:
+            if not isinstance(response, discord.Role):
+                return await ctx.send(response)
+            role = response
+
+        if role not in ctx.message.author.roles:
             return await ctx.send("You do not have that role!")
 
         try:
@@ -56,8 +61,8 @@ class RoleManager(commands.Cog):
 
         await ctx.send("Role removal successful!")
 
-    @commands.command()
-    async def roles(self, ctx):
+    @commands.command(aliases=['roles'])
+    async def majors(self, ctx):
         menu = RoleMenu()
         await menu.start(ctx)
 
@@ -75,16 +80,19 @@ class RoleManager(commands.Cog):
                 break
 
             await ctx.send(f"Did you mean {close_matches[match_idx]}? (Y/N/Stop)")
-            msg = await self.bot.wait_for("message", check=checkmsg)
+            try:
+                msg = await self.bot.wait_for("message", check=checkmsg, timeout=30)
+            except asyncio.TimeoutError:
+                return f"Response timed-out for {ctx.message.author.mention}"
 
             if msg.content.lower() in ["yes", "y"]:
                 return utils.get(ctx.guild.roles, name=close_matches[match_idx])
             elif msg.content.lower() in ["no", "n"]:
                 continue
             elif msg.content.lower() in ["stop", "s"]:
-                break
+                return "Stopped looking for major!"
 
-        return None
+        return "Could not find specified major. Please try again."
 
     async def cog_command_error(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):
