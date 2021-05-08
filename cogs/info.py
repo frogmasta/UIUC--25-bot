@@ -8,7 +8,7 @@ class Information(commands.Cog):
     @commands.command()
     async def info(self, ctx):
         await ctx.send("This is the bot for the UIUC '25 discord server. Any suggestions or bug reports can be sent to "
-                       "<568118705553408040> or raised as an issue at https://github.com/frogmasta/UIUC--25-bot")
+                       "<@568118705553408040> or raised as an issue at https://github.com/frogmasta/UIUC--25-bot.")
 
     @commands.command()
     async def cup(self, ctx):
