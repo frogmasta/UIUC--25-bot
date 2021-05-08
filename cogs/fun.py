@@ -3,10 +3,9 @@ import random
 from discord.ext import commands
 
 
-class FunCommands(commands.Cog):
+class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self._last_member = None
 
     @commands.command(aliases=['8ball'])
     async def _8ball(self, ctx, *, question):
@@ -25,4 +24,4 @@ class FunCommands(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(FunCommands(bot))
+    bot.add_cog(Fun(bot))

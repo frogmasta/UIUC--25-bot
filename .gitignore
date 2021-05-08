@@ -1,7 +1,6 @@
 # Environment files
-/venv/
+venv/
 .env
 
 # Idea folders
 .idea
-/venv/
