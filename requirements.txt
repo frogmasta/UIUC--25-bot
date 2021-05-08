@@ -1,7 +1,2 @@
 python-dotenv
 discord.py
-discord
-py-mon
-colorama
-watchdog
-requests
