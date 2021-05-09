@@ -1,6 +1,6 @@
 # UIUC--25-bot
 
-Configuration:
+Configuration:  
 1.) Set up your .env file in the same folder as main.py  
 2.) Set DISCORD_TOKEN=xxxxxx in .env file (replace xxxxxx with discord bot token)  
 3.) Install requirements.txt  
