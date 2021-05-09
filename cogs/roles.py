@@ -62,15 +62,24 @@ class RoleManager(commands.Cog):
         await ctx.send("Role removal successful!")
 
     @commands.command(aliases=['roles'])
-    async def majors(self, ctx):
-        menu = RoleMenu("Majors", role_names)
-        await menu.start(ctx)
+    async def majors(self, ctx, page=1):
+        try:
+            menu = RoleMenu("Majors", role_names, page)
+            await menu.start(ctx)
+        except IndexError:
+            await ctx.send("The page number you specified is out of bounds!")
 
     @commands.command()
-    async def stats(self, ctx):
+    async def stats(self, ctx, page=1):
         role_count = get_role_count(ctx)
-        menu = RoleMenu("Major Statistics", role_count)
-        await menu.start(ctx)
+        try:
+            menu = RoleMenu("Major Statistics", role_count, page)
+            await menu.start(ctx)
+        except Exception as err:
+            if isinstance(err, IndexError):
+                await ctx.send("The page number you specified is out of bounds!")
+            elif isinstance(err, ValueError):
+                await ctx.send("This server has no major roles to display stats for!")
 
     async def find_closest_match(self, ctx, role_name):
         close_matches = difflib.get_close_matches(role_name, role_names)

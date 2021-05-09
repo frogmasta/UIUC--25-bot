@@ -5,15 +5,20 @@ from discord.ext import menus
 
 
 class RoleMenu(menus.Menu):
-    def __init__(self, title, data):
+    def __init__(self, title, data, page=1):
         super().__init__()
 
         self.title = title
         self.data = data
-
         self._embed = None
-        self._page = 1
+
+        if len(self.data) <= 0:
+            raise ValueError("No data found!")
         self._maxPages = math.ceil(len(self.data) / 10)
+
+        if page < 1 or page > self._maxPages:
+            raise IndexError("Number of of bounds!")
+        self._page = page
 
     async def send_initial_message(self, ctx, channel):
         icon = ctx.message.author.avatar_url
