@@ -19,7 +19,7 @@ class RoleMenu(menus.Menu):
         self._maxPages = math.ceil(len(self.data) / 10)
 
         if page < 1 or page > self._maxPages:
-            raise IndexError("Number of of bounds!")
+            raise IndexError("Number out of bounds!")
         self._page = page
 
     async def send_initial_message(self, ctx, channel):
