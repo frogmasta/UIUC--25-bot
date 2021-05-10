@@ -66,7 +66,7 @@ class RoleMenu(menus.Menu):
                 if 0 <= place <= 2:
                     row += ['👑', '🥈', '🥉'][place] + " - "
                 else:
-                    row += f"#{place} - "
+                    row += f"#{place + 1} - "
 
             try:
                 if isinstance(self.data, list):
