@@ -42,6 +42,8 @@ async def on_message(message):
             for part in msg_parts:
                 await message.channel.send(part)
 
+            break
+
     # Process other commands if applicable
     await bot.process_commands(message)
 
