@@ -5,11 +5,13 @@ from discord.ext import menus
 
 
 class RoleMenu(menus.Menu):
-    def __init__(self, title, data, page=1):
+    def __init__(self, title, data, page=1, *, is_leaderboard=False):
         super().__init__()
 
         self.title = title
         self.data = data
+        self.is_leaderboard = is_leaderboard
+
         self._embed = None
 
         if len(self.data) <= 0:
@@ -56,13 +58,25 @@ class RoleMenu(menus.Menu):
 
         start_idx = (self._page - 1) * 10
         for idx in range(start_idx, start_idx + 10):
+            row = ''
+
+            if self.is_leaderboard:
+                place = start_idx + idx
+
+                if 0 <= place <= 2:
+                    row += ['👑', '🥈', '🥉'][place] + " - "
+                else:
+                    row += f"#{place} - "
+
             try:
                 if isinstance(self.data, list):
-                    data_list += f"{self.data[idx]} \n\n"
+                    row += f"{self.data[idx]} \n\n"
                 elif isinstance(self.data, dict):
                     keys = sorted(list(self.data.keys()), key=lambda k: self.data[k], reverse=True)
-                    data_list += f"{keys[idx]} - {self.data[keys[idx]]} \n\n"
+                    row += f"{keys[idx]}: {self.data[keys[idx]]} \n\n"
             except IndexError:
                 break
+
+            data_list += row
 
         return data_list

@@ -73,7 +73,7 @@ class RoleManager(commands.Cog):
     async def stats(self, ctx, page=1):
         role_count = get_role_count(ctx)
         try:
-            menu = RoleMenu("Major Statistics", role_count, page)
+            menu = RoleMenu("Major Statistics", role_count, page, is_leaderboard=True)
             await menu.start(ctx)
         except Exception as err:
             if isinstance(err, IndexError):
