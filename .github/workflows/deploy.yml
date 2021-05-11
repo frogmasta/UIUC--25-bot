@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - [ master ]
+      - master
 name: 🚀 Deploy bot to server
 jobs:
   bot-deploy:
