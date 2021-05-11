@@ -4,7 +4,6 @@ Configuration:
 1.) Set up your .env file in the same folder as main.py  
 2.) Set DISCORD_TOKEN=xxxxxx in .env file (replace xxxxxx with discord bot token)  
 3.) Install requirements.txt  
-4.) Install experimental library here -> https://github.com/Rapptz/discord-ext-menus
 
 Resources:
 If you don't know how to get a discord bot token, take a look here
