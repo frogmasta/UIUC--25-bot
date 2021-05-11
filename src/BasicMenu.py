@@ -61,12 +61,12 @@ class RoleMenu(menus.Menu):
             row = ''
 
             if self.is_leaderboard:
-                place = start_idx + idx
+                place = idx + 1
 
-                if 0 <= place <= 2:
-                    row += ['👑', '🥈', '🥉'][place] + " - "
+                if 1 <= place <= 3:
+                    row += ['👑', '🥈', '🥉'][place-1] + " - "
                 else:
-                    row += f"#{place + 1} - "
+                    row += f"#{place} - "
 
             try:
                 if isinstance(self.data, list):
