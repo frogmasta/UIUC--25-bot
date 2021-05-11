@@ -15,16 +15,7 @@ class RoleManager(commands.Cog):
 
     @commands.command(aliases=['add'])
     @commands.has_any_role("Kingfishers", "Big Fish")
-    async def assign(self, ctx, *, role_name):
-        role = utils.get(ctx.guild.roles, name=role_name)
-
-        if not role:
-            response = await self.find_closest_match(ctx, role_name)
-
-            if not isinstance(response, discord.Role):
-                return await ctx.send(response)
-            role = response
-
+    async def assign(self, ctx, *, role: discord.Role):
         if role.name not in role_names:
             return await ctx.send("I cannot assign this role!")
         elif role in ctx.message.author.roles:
@@ -39,16 +30,7 @@ class RoleManager(commands.Cog):
 
     @commands.command(aliases=['remove'])
     @commands.has_any_role("Kingfishers", "Big Fish")
-    async def unassign(self, ctx, *, role_name):
-        role = utils.get(ctx.guild.roles, name=role_name)
-
-        if not role:
-            response = await self.find_closest_match(ctx, role_name)
-
-            if not isinstance(response, discord.Role):
-                return await ctx.send(response)
-            role = response
-
+    async def unassign(self, ctx, *, role: discord.Role):
         if role.name not in role_names:
             return await ctx.send("I cannot remove this role!")
         elif role not in ctx.message.author.roles:
@@ -60,6 +42,18 @@ class RoleManager(commands.Cog):
             return await ctx.send("I do not have the permission to remove that role!")
 
         await ctx.send("Role removal successful!")
+
+    @commands.command()
+    async def students(self, ctx, *, role: discord.Role):
+        people = list(filter(lambda member: role in member.roles, ctx.guild.members))
+        people = [member.mention for member in people]
+
+        try:
+            menu = RoleMenu(f"{role.name}", people)
+            await menu.start(ctx)
+        except Exception as err:
+            if isinstance(err, ValueError):
+                await ctx.send('There is nobody with this major in the server!')
 
     @commands.command(aliases=['roles'])
     async def majors(self, ctx, page=1):
@@ -109,7 +103,22 @@ class RoleManager(commands.Cog):
 
         return "Could not find specified major. Please try again."
 
+    @assign.error
+    @unassign.error
+    @students.error
+    async def role_not_found_error(self, ctx, error):
+        if isinstance(error, commands.RoleNotFound):
+            response = await self.find_closest_match(ctx, error.argument)
+
+            if not isinstance(response, discord.Role):
+                return await ctx.send(response)
+
+            await ctx.invoke(ctx.command, role=response)
+
     async def cog_command_error(self, ctx, error):
+        if ctx.command.has_error_handler():
+            return
+
         if isinstance(error, commands.errors.MissingRequiredArgument):
             return await ctx.send("Please specify a role!")
         elif isinstance(error, commands.errors.MissingAnyRole):
