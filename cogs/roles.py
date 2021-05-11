@@ -18,16 +18,16 @@ class RoleManager(commands.Cog):
     async def assign(self, ctx, *, role_name):
         role = utils.get(ctx.guild.roles, name=role_name)
 
-        if role and role.name not in role_names:
-            return await ctx.send("I cannot assign this role!")
-        elif not role:
+        if not role:
             response = await self.find_closest_match(ctx, role_name)
 
             if not isinstance(response, discord.Role):
                 return await ctx.send(response)
             role = response
 
-        if role in ctx.message.author.roles:
+        if role.name not in role_names:
+            return await ctx.send("I cannot assign this role!")
+        elif role in ctx.message.author.roles:
             return await ctx.send("You already have that role!")
 
         try:
@@ -42,16 +42,16 @@ class RoleManager(commands.Cog):
     async def unassign(self, ctx, *, role_name):
         role = utils.get(ctx.guild.roles, name=role_name)
 
-        if role and role.name not in role_names:
-            return await ctx.send("I cannot remove this role!")
-        elif not role:
+        if not role:
             response = await self.find_closest_match(ctx, role_name)
 
             if not isinstance(response, discord.Role):
                 return await ctx.send(response)
             role = response
 
-        if role not in ctx.message.author.roles:
+        if role.name not in role_names:
+            return await ctx.send("I cannot remove this role!")
+        elif role not in ctx.message.author.roles:
             return await ctx.send("You do not have that role!")
 
         try:
