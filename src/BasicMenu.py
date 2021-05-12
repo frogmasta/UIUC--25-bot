@@ -5,12 +5,13 @@ from discord.ext import menus
 
 
 class RoleMenu(menus.Menu):
-    def __init__(self, title, data, page=1, *, is_leaderboard=False):
+    def __init__(self, title, data, page=1, *, is_leaderboard=False, footer_message=None):
         super().__init__()
 
         self.title = title
         self.data = data
         self.is_leaderboard = is_leaderboard
+        self.footer_message = footer_message
 
         self._embed = None
 
@@ -23,14 +24,8 @@ class RoleMenu(menus.Menu):
         self._page = page
 
     async def send_initial_message(self, ctx, channel):
-        icon = ctx.message.author.avatar_url
-        data_list = self.generate_data_list()
-
-        embed = discord.Embed(title=self.title, description=data_list, color=0xFF4500)
-        embed.set_footer(text=f"Page {self._page}/{self._maxPages}", icon_url=icon)
-
-        self._embed = embed
-        return await ctx.send(embed=embed)
+        self.generate_embed(ctx.message.author.avatar_url)
+        return await ctx.send(embed=self._embed)
 
     @menus.button('⬅️')
     async def on_arrow_left(self, payload):
@@ -41,17 +36,21 @@ class RoleMenu(menus.Menu):
         await self.move_page(1)
 
     async def move_page(self, increment):
-        icon = self._embed.footer.icon_url
-
         if 1 <= self._page + increment <= self._maxPages:
             self._page += increment
-            role_list = self.generate_data_list()
+            self.generate_embed(self._embed.footer.icon_url)
+            await self.message.edit(embed=self._embed)
 
-            embed = discord.Embed(title=self.title, description=role_list, color=0xFF4500)
+    def generate_embed(self, icon):
+        data_list = self.generate_data_list()
+
+        embed = discord.Embed(title=self.title, description=data_list, color=0xFF4500)
+        if self.footer_message:
+            embed.set_footer(text=f"Page {self._page}/{self._maxPages} | {self.footer_message}", icon_url=icon)
+        else:
             embed.set_footer(text=f"Page {self._page}/{self._maxPages}", icon_url=icon)
 
-            self._embed = embed
-            await self.message.edit(embed=self._embed)
+        self._embed = embed
 
     def generate_data_list(self):
         data_list = ""
