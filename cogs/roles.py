@@ -46,10 +46,10 @@ class RoleManager(commands.Cog):
     @commands.command()
     async def students(self, ctx, *, role: discord.Role):
         people = list(filter(lambda member: role in member.roles, ctx.guild.members))
-        people = [f"{person.mention} {person}" for person in people]
+        data = [f"{person.mention}\n↳ {person}" for person in people]
 
         try:
-            menu = RoleMenu(f"{role.name}", people, footer_message="Some user mentions may not work!")
+            menu = RoleMenu(f"{role.name}", data, footer_message="Some user mentions may not work!")
             await menu.start(ctx)
         except Exception as err:
             if isinstance(err, ValueError):
