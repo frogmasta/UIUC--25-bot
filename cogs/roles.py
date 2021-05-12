@@ -46,7 +46,6 @@ class RoleManager(commands.Cog):
     @commands.command()
     async def students(self, ctx, *, role: discord.Role):
         people = list(filter(lambda member: role in member.roles, ctx.guild.members))
-        people = [member.mention for member in people]
 
         try:
             menu = RoleMenu(f"{role.name}", people)
@@ -116,13 +115,12 @@ class RoleManager(commands.Cog):
             await ctx.invoke(ctx.command, role=response)
 
     async def cog_command_error(self, ctx, error):
-        if ctx.command.has_error_handler():
-            return
-
         if isinstance(error, commands.errors.MissingRequiredArgument):
             return await ctx.send("Please specify a role!")
         elif isinstance(error, commands.errors.MissingAnyRole):
             return await ctx.send("You need the Kingfishers or Big Fish role to use major role commands!")
+        elif isinstance(error, commands.RoleNotFound):
+            return
 
         raise error
 
