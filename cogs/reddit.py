@@ -32,9 +32,18 @@ class Reddit(commands.Cog):
             return
 
         i = await sub.random()
+        if not i:
+            async for x in sub.random_rising():
+                i = x
+                break
+
         if not nsfw and i.over_18:
             for i in range(3):
                 i = await sub.random()
+                if not i:
+                    async for x in sub.random_rising():
+                        i = x
+                        break
                 if not i.over_18:
                     break
             if i.over_18:
@@ -42,17 +51,23 @@ class Reddit(commands.Cog):
                 return
 
         title = i.title
+        permalink = i.permalink
         url = i.url
         score = i.score
         ratio = i.upvote_ratio
         await i.author.load()
         author = i.author.name
         pfp = i.author.icon_img
-        desc = f'Score: {score}\nUpvote Ratio: {int(ratio*100)}%'
-        embed=discord.Embed(title=title, description=desc, color=0xc6a679)
-        embed.set_author(name=author, icon_url=(pfp))
+        desc = f'Score: {score} | Upvote Ratio: {int(ratio*100)}%\n'
+        embed=discord.Embed(title=title, description=desc, color=0xc6a679, url="https://reddit.com"+permalink)
+        if i.selftext!='':
+            embed.description+=f'\n{i.selftext}'
+            if len(embed.description)>2000:
+                embed.description=embed.description[0:1997]+"..."
+        else:
+            embed.set_image(url=url)
+        embed.set_author(name=author, icon_url=(pfp), url=f"https://reddit.com/user/{author}")
         embed.set_footer(text = f'Fresh from r/{sub}')
-        embed.set_image(url=url)
         await ctx.send(embed=embed)
 
     @commands.command(brief="It's time to c-c-c-c-cringe", description="I don't know if it's dank, but it's definitely a meme")
