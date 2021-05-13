@@ -56,16 +56,19 @@ class Reddit(commands.Cog):
         await post.author.load()
         author = post.author.name
         pfp = post.author.icon_img
-        desc = f'Score: {post.score} | Upvote Ratio: {int(post.upvote_ratio*100)}%\n'
-        embed=discord.Embed(title=post.title, description=desc, color=0xc6a679, url="https://reddit.com"+post.permalink)
-        if post.selftext!='':
-            embed.description+=f'\n{post.selftext}'
-            if len(embed.description)>2000:
-                embed.description=embed.description[0:1997]+"..."
+        desc = f'Score: {post.score} | Upvote Ratio: {int(post.upvote_ratio * 100)}%\n'
+        embed = discord.Embed(title=post.title, description=desc, color=0xc6a679,
+                              url="https://reddit.com" + post.permalink)
+
+        if post.is_self:
+            embed.description += f'\n{post.selftext}'
+            if len(embed.description) > 2000:
+                embed.description = embed.description[0:1997] + "..."
         else:
             embed.set_image(url=post.url)
-        embed.set_author(name=author, icon_url=(pfp), url=f"https://reddit.com/user/{author}")
-        embed.set_footer(text = f'Fresh from r/{sub}')
+
+        embed.set_author(name=author, icon_url=pfp, url=f"https://reddit.com/user/{author}")
+        embed.set_footer(text=f'Fresh from r/{sub}')
         await ctx.send(embed=embed)
 
     @commands.command(brief="It's time to c-c-c-c-cringe",
