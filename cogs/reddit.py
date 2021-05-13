@@ -35,25 +35,37 @@ class Reddit(commands.Cog):
             return
 
         post = await sub.random()
+        if not post:
+            async for x in sub.random_rising():
+                post = x
+                break
+
         if not nsfw and post.over_18:
-            for post in range(3):
-                post = await sub.random()
+            for x in range(3):
+                x = await sub.random()
+                if not x:
+                    async for i in sub.random_rising():
+                        post = x
+                        break
                 if not post.over_18:
                     break
             if post.over_18:
                 await ctx.send("Couldn't find SFW content :/")
                 return
-
+              
         await post.author.load()
         author = post.author.name
-        desc = f'Score: {post.score}\nUpvote Ratio: {int(post.upvote_ratio * 100)}%'
-
-        embed = discord.Embed(title=post.title, description=desc, url=f"https://reddit.com{post.permalink}",
-                              color=0xc6a679)
-        embed.set_author(name=author, icon_url=post.author.icon_img, url=f"https://reddit.com/user/{author}")
-        embed.set_footer(text=f'Fresh from r/{sub}')
-        embed.set_image(url=post.url)
-
+        pfp = post.author.icon_img
+        desc = f'Score: {post.score} | Upvote Ratio: {int(post.ratio*100)}%\n'
+        embed=discord.Embed(title=post.title, description=desc, color=0xc6a679, url="https://reddit.com"+post.permalink)
+        if i.selftext!='':
+            embed.description+=f'\n{post.selftext}'
+            if len(embed.description)>2000:
+                embed.description=embed.description[0:1997]+"..."
+        else:
+            embed.set_image(url=post.url)
+        embed.set_author(name=author, icon_url=(pfp), url=f"https://reddit.com/user/{author}")
+        embed.set_footer(text = f'Fresh from r/{sub}')
         await ctx.send(embed=embed)
 
     @commands.command(brief="It's time to c-c-c-c-cringe",
