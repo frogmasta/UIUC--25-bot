@@ -52,13 +52,13 @@ class Reddit(commands.Cog):
             if post.over_18:
                 await ctx.send("Couldn't find SFW content :/")
                 return
-              
+
         await post.author.load()
         author = post.author.name
         pfp = post.author.icon_img
-        desc = f'Score: {post.score} | Upvote Ratio: {int(post.ratio*100)}%\n'
+        desc = f'Score: {post.score} | Upvote Ratio: {int(post.upvote_ratio*100)}%\n'
         embed=discord.Embed(title=post.title, description=desc, color=0xc6a679, url="https://reddit.com"+post.permalink)
-        if i.selftext!='':
+        if post.selftext!='':
             embed.description+=f'\n{post.selftext}'
             if len(embed.description)>2000:
                 embed.description=embed.description[0:1997]+"..."
@@ -73,7 +73,9 @@ class Reddit(commands.Cog):
     async def meme(self, ctx):
         await self.genfetch('memes', ctx)
 
-    @commands.command(brief="Shitty reddit in discord", description="Why use reddit when you can use shitty reddit?")
+    @commands.command(brief="Shitty reddit in discord",
+                      description="Why use reddit when you can use shitty reddit?",
+                      aliases=['redfetch', 'subreddit', 'sub'])
     async def reddit(self, ctx, subred='UIUC'):
         if subred.startswith(('/r/', 'r/')):
             subred = subred.split('r/')[-1]
