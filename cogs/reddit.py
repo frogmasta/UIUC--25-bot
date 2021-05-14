@@ -51,9 +51,9 @@ class DiscordReddit(commands.Cog):
             sub = await reddit.subreddit(sub, fetch=True)
         except Exception as e:
             if isinstance(e, asyncprawcore.Forbidden):
-                return await ctx.send("Subreddit is either private or quarantined 😃")
+                return await ctx.send(f"Subreddit **r/{sub}** is either private or quarantined 😃")
             elif isinstance(e, asyncprawcore.NotFound) or isinstance(e, asyncprawcore.Redirect):
-                return await ctx.send("Subreddit could not be found 😭")
+                return await ctx.send(f"Subreddit **r/{sub}** could not be found 😭")
 
         # NSFW check for subreddit
         if not nsfw and sub.over18:
@@ -63,12 +63,16 @@ class DiscordReddit(commands.Cog):
         try:
             limit = 50
             sort_method = getattr(sub, order)
-            if sort_method.__name__ == 'top':
-                submission_gen = sort_method(time, limit=limit)
-            else:
-                submission_gen = sort_method(limit=limit)
         except AttributeError:
-            return await ctx.send(f"Could not find a {order} order method!")
+            return await ctx.send(f"Could not find a **{order}** order method!")
+
+        if sort_method.__name__ == 'top':
+            try:
+                submission_gen = sort_method(time, limit=limit)
+            except ValueError:
+                return await ctx.send(f"Could not find a way to filter top by **{time}** 😐")
+        else:
+            submission_gen = sort_method(limit=limit)
 
         # List of submissions with NSFW filter
         submissions = []
@@ -93,7 +97,7 @@ class DiscordReddit(commands.Cog):
                 defaults['sub'] = option.split('r/')[-1]
             elif option in ['controversial', 'hot', 'new', 'top', 'random_rising', 'random', 'rising']:
                 defaults['order'] = option
-            elif option in ['hour', 'today', 'week', 'month', 'year', 'all']:
+            else:
                 defaults['time'] = option
 
         return defaults
