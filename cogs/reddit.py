@@ -1,9 +1,11 @@
 import os
 
 import asyncpraw
-import discord
+import asyncprawcore
 from discord.ext import commands
 from dotenv import load_dotenv
+
+from src.RedditMenu import RedditMenu
 
 load_dotenv()
 
@@ -16,75 +18,86 @@ reddit = asyncpraw.Reddit(client_id=authid,
                           user_agent=usragent)
 
 
-class Reddit(commands.Cog):
+class DiscordReddit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @staticmethod
-    async def genfetch(sub, ctx, nsfw=False):
-        global reddit
-        try:
-            sub = await reddit.subreddit(sub)
-            await sub.load()
-        except:
-            await ctx.send("Subreddit could not be found.")
-            return
-
-        if not nsfw and sub.over18:
-            await ctx.send("You're attempting to fetch an NSFW sub in a non-NSFW channel -_-")
-            return
-
-        post = await sub.random()
-        if not post:
-            async for x in sub.random_rising():
-                post = x
-                break
-
-        if not nsfw and post.over_18:
-            for x in range(3):
-                x = await sub.random()
-                if not x:
-                    async for i in sub.random_rising():
-                        post = x
-                        break
-                if not post.over_18:
-                    break
-            if post.over_18:
-                await ctx.send("Couldn't find SFW content :/")
-                return
-
-        await post.author.load()
-        author = post.author.name
-        pfp = post.author.icon_img
-        desc = f'Score: {post.score} | Upvote Ratio: {int(post.upvote_ratio * 100)}%\n'
-        embed = discord.Embed(title=post.title, description=desc, color=0xc6a679,
-                              url="https://reddit.com" + post.permalink)
-
-        if post.is_self:
-            embed.description += f'\n{post.selftext}'
-            if len(embed.description) > 2000:
-                embed.description = embed.description[0:1997] + "..."
-        else:
-            embed.set_image(url=post.url)
-
-        embed.set_author(name=author, icon_url=pfp, url=f"https://reddit.com/user/{author}")
-        embed.set_footer(text=f'Fresh from r/{sub}')
-        await ctx.send(embed=embed)
-
     @commands.command(brief="It's time to c-c-c-c-cringe",
                       description="I don't know if it's dank, but it's definitely a meme")
-    async def meme(self, ctx):
-        await self.genfetch('memes', ctx)
+    async def meme(self, ctx, *args):
+        options = self.reddit_arg_parser(args)
+        options['sub'] = 'memes'
+
+        submissions = await self.fetch_submissions(ctx, **options)
+        rmenu = RedditMenu(reddit, submissions)
+        await rmenu.start(ctx)
 
     @commands.command(brief="Shitty reddit in discord",
                       description="Why use reddit when you can use shitty reddit?",
                       aliases=['redfetch', 'subreddit', 'sub'])
-    async def reddit(self, ctx, subred='UIUC'):
-        if subred.startswith(('/r/', 'r/')):
-            subred = subred.split('r/')[-1]
+    async def reddit(self, ctx, *args):
+        options = self.reddit_arg_parser(args)
 
-        await self.genfetch(subred, ctx)
+        submissions = await self.fetch_submissions(ctx, **options)
+        rmenu = RedditMenu(reddit, submissions)
+        await rmenu.start(ctx)
+
+    @staticmethod
+    async def fetch_submissions(ctx, sub, order, *, time='day', nsfw=False):
+        global reddit
+
+        # Get subreddit
+        try:
+            sub = await reddit.subreddit(sub, fetch=True)
+        except Exception as e:
+            if isinstance(e, asyncprawcore.Forbidden):
+                return await ctx.send("Subreddit is either private or quarantined 😃")
+            elif isinstance(e, asyncprawcore.NotFound) or isinstance(e, asyncprawcore.Redirect):
+                return await ctx.send("Subreddit could not be found 😭")
+
+        # NSFW check for subreddit
+        if not nsfw and sub.over18:
+            return await ctx.send("You're attempting to fetch an NSFW sub in a non-NSFW channel -_-")
+
+        # Order the result based on user input
+        try:
+            limit = 50
+            sort_method = getattr(sub, order)
+            if sort_method.__name__ == 'top':
+                submission_gen = sort_method(time, limit=limit)
+            else:
+                submission_gen = sort_method(limit=limit)
+        except AttributeError:
+            return await ctx.send(f"Could not find a {order} order method!")
+
+        # List of submissions with NSFW filter
+        submissions = []
+        async for p in submission_gen:
+            if not p.over_18 or nsfw:
+                submissions.append(p)
+
+        return submissions
+
+    @staticmethod
+    def reddit_arg_parser(args):
+        defaults = {
+            "sub": "UIUC",
+            "order": "hot",
+        }
+
+        for option in args:
+            if option == 'random':
+                option = 'random_rising'
+
+            if option.startswith(('/r/', 'r/')):
+                defaults['sub'] = option.split('r/')[-1]
+            elif option in ['controversial', 'hot', 'new', 'top', 'random_rising', 'random', 'rising']:
+                defaults['order'] = option
+            elif option in ['hour', 'today', 'week', 'month', 'year', 'all']:
+                defaults['time'] = option
+
+        return defaults
 
 
 def setup(bot):
-    bot.add_cog(Reddit(bot))
+    bot.add_cog(DiscordReddit(bot))
