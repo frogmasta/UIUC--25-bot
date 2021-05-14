@@ -53,7 +53,7 @@ class RedditMenu(menus.Menu):
 
         desc = f'Score: {post.score} | Upvote Ratio: {int(post.upvote_ratio * 100)}%\n'
 
-        embed = discord.Embed(title=post.title, description=desc, color=0xc6a679,
+        embed = discord.Embed(title=post.title, description=desc, color=0xFF4500,
                               url="https://reddit.com" + post.permalink)
 
         # Distinguish between text, image, and cross posts
