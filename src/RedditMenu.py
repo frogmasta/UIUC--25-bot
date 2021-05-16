@@ -29,12 +29,12 @@ class RedditMenu(menus.Menu):
         self._page = page
 
     async def send_initial_message(self, ctx, channel):
-        msg = await ctx.send(embed=self.loading_embed())
-
-        await self.generate_embed(msg=msg)
-        await msg.edit(embed=self._embed)
-
-        return msg
+        msg = await self.generate_embed()
+        if msg:
+            await msg.edit(embed=self._embed)
+            return msg
+        else:
+            return await ctx.send(embed=self._embed)
 
     @menus.button('⬅️')
     async def on_arrow_left(self, payload):
@@ -50,12 +50,9 @@ class RedditMenu(menus.Menu):
             await self.generate_embed()
             await self.message.edit(embed=self._embed)
 
-    async def generate_embed(self, *, msg=None):
-        if not msg:
-            await self.message.edit(embed=self.loading_embed())
-
+    async def generate_embed(self):
+        msg = None
         post = self.submissions[self._page - 1]
-        await post.load()
 
         if post.author:
             await post.author.load()
@@ -77,6 +74,12 @@ class RedditMenu(menus.Menu):
             if len(embed.description) > 2000:
                 embed.description = embed.description[0:1997] + "..."
         elif post.domain == 'v.redd.it' or 'video' in post_hint:
+            if self.message is not None:
+                await self.message.edit(embed=self.loading_embed())
+            else:
+                msg = await self.ctx.send(embed=self.loading_embed())
+
+            await post.load()
             iurl = self.preview_image_url(post, f"{post.id}.png")
             embed.description += f'\n[**VIDEO PREVIEW**]({post.url}):'
         elif post.domain == 'i.redd.it' or 'image' in post_hint:
@@ -95,6 +98,7 @@ class RedditMenu(menus.Menu):
             embed.set_image(url=iurl)
 
         self._embed = embed
+        return msg
 
     @staticmethod
     def loading_embed():

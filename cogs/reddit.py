@@ -22,11 +22,6 @@ class DiscordReddit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def bruh_moment(self, ctx):
-        print(ctx.guild.icon_url)
-        await ctx.send(ctx.guild.icon_url)
-
     @commands.command(brief="It's time to c-c-c-c-cringe",
                       description="I don't know if it's dank, but it's definitely a meme")
     async def meme(self, ctx, *args):
