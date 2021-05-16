@@ -2,6 +2,9 @@
 venv/
 .env
 
+# Temporary images
+temp.png
+
 # Idea folders
 .idea
 setenv
