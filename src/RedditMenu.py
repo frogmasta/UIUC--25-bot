@@ -1,4 +1,5 @@
 import pathlib
+import re
 from math import floor
 from statistics import mean
 
@@ -68,12 +69,12 @@ class RedditMenu(menus.Menu):
 
         # Distinguish between text, image, and cross posts
         post_hint = post.__dict__.get('post_hint', '')
+        urllist = self.urls_in_selftext(post.selftext)
+        print('post_hint')
+        print(vars(post))
         iurl = None
-        if post.is_self:
-            embed.description += f'\n{post.selftext}'
-            if len(embed.description) > 2000:
-                embed.description = embed.description[0:1997] + "..."
-        elif post.domain == 'v.redd.it' or 'video' in post_hint:
+        if post.domain == 'v.redd.it' or 'video' in post_hint:
+            print('video')
             if self.message is not None:
                 await self.message.edit(embed=self.loading_embed())
             else:
@@ -82,12 +83,22 @@ class RedditMenu(menus.Menu):
             await post.load()
             iurl = self.preview_image_url(post, f"{post.id}.png")
             embed.description += f'\n[**VIDEO PREVIEW**]({post.url}):'
-        elif post.domain == 'i.redd.it' or 'image' in post_hint:
-            iurl = post.url
+        elif post.domain == 'i.redd.it' or 'image' in post_hint or len(urllist) > 0:
+            if len(urllist):
+                iurl = urllist[0]
+            else:
+                iurl = post.url
+        elif post.is_self:
+            print('selftext')
+            embed.description += f'\n{post.selftext}'
+            if len(embed.description) > 2000:
+                embed.description = embed.description[0:1997] + "..."
         elif hasattr(post, "crosspost_parent"):
+            print('crosspost')
             crosspost = await self.reddit.submission(id=post.crosspost_parent.split("_")[1])
             embed.description += '\nCrosspost from:\n\nhttps://reddit.com' + crosspost.permalink
         elif 'link' in post_hint:
+            print('link')
             embed.description += f"\n[**LINK**]({post.url_overridden_by_dest})"
         # TODO: Support gallery data (multiple images in reddit)
 
@@ -132,3 +143,8 @@ class RedditMenu(menus.Menu):
         upload_to_aws(temp_fpath, name_of_file)
 
         return 'https://rpreview-images.s3.us-east-2.amazonaws.com/' + name_of_file
+
+    @staticmethod
+    def urls_in_selftext(text):
+        urllist = re.findall(r'(https?://preview.redd.it[^\s]+)', text)
+        return urllist
