@@ -22,14 +22,19 @@ class DiscordReddit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command()
+    async def bruh_moment(self, ctx):
+        print(ctx.guild.icon_url)
+        await ctx.send(ctx.guild.icon_url)
+
     @commands.command(brief="It's time to c-c-c-c-cringe",
                       description="I don't know if it's dank, but it's definitely a meme")
     async def meme(self, ctx, *args):
         options = self.reddit_arg_parser(args)
         options['sub'] = 'memes'
 
-        submissions = await self.fetch_submissions(ctx, **options)
-        rmenu = RedditMenu(reddit, submissions)
+        submissions, sub = await self.fetch_submissions(ctx, **options)
+        rmenu = RedditMenu(reddit, submissions, sub)
         await rmenu.start(ctx)
 
     @commands.command(brief="Shitty reddit in discord",
@@ -38,8 +43,8 @@ class DiscordReddit(commands.Cog):
     async def reddit(self, ctx, *args):
         options = self.reddit_arg_parser(args)
 
-        submissions = await self.fetch_submissions(ctx, **options)
-        rmenu = RedditMenu(reddit, submissions)
+        submissions, sub = await self.fetch_submissions(ctx, **options)
+        rmenu = RedditMenu(reddit, submissions, sub)
         await rmenu.start(ctx)
 
     @staticmethod
@@ -61,7 +66,7 @@ class DiscordReddit(commands.Cog):
 
         # Order the result based on user input
         try:
-            limit = 50
+            limit = 20
             sort_method = getattr(sub, order)
         except AttributeError:
             return await ctx.send(f"Could not find a **{order}** order method!")
@@ -80,7 +85,7 @@ class DiscordReddit(commands.Cog):
             if not p.over_18 or nsfw:
                 submissions.append(p)
 
-        return submissions
+        return submissions, sub
 
     @staticmethod
     def reddit_arg_parser(args):
