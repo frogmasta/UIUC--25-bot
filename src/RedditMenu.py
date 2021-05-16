@@ -10,6 +10,8 @@ from discord.ext import menus
 
 from src.aws import upload_to_aws
 
+DEFAULT_ICON = 'https://www.redditstatic.com/avatars/avatar_default_02_FF4500.png'
+
 
 class RedditMenu(menus.Menu):
     def __init__(self, reddit, submissions, sub, page=1):
@@ -58,50 +60,50 @@ class RedditMenu(menus.Menu):
         if post.author:
             await post.author.load()
             author_name = post.author.name
-            author_icon = post.author.icon_img
+            if hasattr(post.author, 'is_suspended') and post.author.is_suspended:
+                author_icon = DEFAULT_ICON
+            else:
+                author_icon = post.author.icon_img
         else:
             author_name = '[deleted]'
-            author_icon = 'https://www.redditstatic.com/avatars/avatar_default_02_FF4500.png'
+            author_icon = DEFAULT_ICON
 
+        title = post.title
         desc = f'Score: {post.score} | Comments: {post.num_comments} | Upvote Ratio: {int(post.upvote_ratio * 100)}%\n'
-        embed = discord.Embed(title=post.title, description=desc, color=0xFF4500,
-                              url="https://reddit.com" + post.permalink)
 
         # Distinguish between text, image, and cross posts
         post_hint = post.__dict__.get('post_hint', '')
         urllist = self.urls_in_selftext(post.selftext)
-        print('post_hint')
-        print(vars(post))
         iurl = None
         if post.domain == 'v.redd.it' or 'video' in post_hint:
-            print('video')
             if self.message is not None:
                 await self.message.edit(embed=self.loading_embed())
             else:
                 msg = await self.ctx.send(embed=self.loading_embed())
 
-            await post.load()
-            iurl = self.preview_image_url(post, f"{post.id}.png")
-            embed.description += f'\n[**VIDEO PREVIEW**]({post.url}):'
+            iurl = await self.preview_image_url(post, f"{post.id}.png")
+            title += " [VIDEO]"
         elif post.domain == 'i.redd.it' or 'image' in post_hint or len(urllist) > 0:
             if len(urllist):
                 iurl = urllist[0]
             else:
                 iurl = post.url
         elif post.is_self:
-            print('selftext')
-            embed.description += f'\n{post.selftext}'
-            if len(embed.description) > 2000:
-                embed.description = embed.description[0:1997] + "..."
+            desc += f'\n{post.selftext}'
         elif hasattr(post, "crosspost_parent"):
-            print('crosspost')
             crosspost = await self.reddit.submission(id=post.crosspost_parent.split("_")[1])
-            embed.description += '\nCrosspost from:\n\nhttps://reddit.com' + crosspost.permalink
+            desc += '\nCrosspost from:\nhttps://reddit.com' + crosspost.permalink
         elif 'link' in post_hint:
-            print('link')
-            embed.description += f"\n[**LINK**]({post.url_overridden_by_dest})"
+            desc += f"\n[**LINK**]({post.url_overridden_by_dest})"
         # TODO: Support gallery data (multiple images in reddit)
 
+        if len(title) > 120:
+            title = title[:117] + '...'
+        if len(desc) > 2000:
+            desc = desc[0:1997] + "..."
+
+        embed = discord.Embed(title=title, description=desc, color=0xFF4500,
+                              url="https://reddit.com" + post.permalink)
         embed.set_author(name=author_name, icon_url=author_icon, url=f"https://reddit.com/user/{author_name}")
         embed.set_footer(text=f'Fresh from r/{self.sub} | Page {self._page}/{self._maxPages}',
                          icon_url=self.sub.community_icon)
@@ -119,8 +121,13 @@ class RedditMenu(menus.Menu):
         return embed
 
     @staticmethod
-    def preview_image_url(post, name_of_file):
-        p_url = post.preview['images'][0]['source']['url']
+    async def preview_image_url(post, name_of_file):
+        try:
+            p_url = post.preview['images'][0]['source']['url']
+        except AttributeError:
+            await post.load()
+            p_url = post.preview['images'][0]['source']['url']
+
         bimg_path = pathlib.Path(__file__).parent / "play_button.png"
 
         play_button = Image.open(bimg_path).convert('RGBA')
@@ -138,9 +145,9 @@ class RedditMenu(menus.Menu):
         final.paste(preview, (0, 0), preview)
         final.paste(play_button, offset, play_button)
 
-        temp_fpath = "src/temp.png"
+        temp_fpath = pathlib.Path(__file__).parent / "temp.png"
         final.save(temp_fpath)
-        upload_to_aws(temp_fpath, name_of_file)
+        upload_to_aws(str(temp_fpath), name_of_file)
 
         return 'https://rpreview-images.s3.us-east-2.amazonaws.com/' + name_of_file
 

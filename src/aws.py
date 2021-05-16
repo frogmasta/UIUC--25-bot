@@ -15,6 +15,7 @@ def upload_to_aws(fp, s3_file_name):
 
     try:
         s3.upload_file(fp, BUCKET, s3_file_name)
+        print('Upload Successful')
         return True
     except Exception as e:
         print(e)
