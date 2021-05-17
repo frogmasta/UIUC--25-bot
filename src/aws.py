@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 ACCESS_KEY = os.getenv('AMAZON_ACCESS_KEY')
 SECRET_KEY = os.getenv('AMAZON_SECRET_KEY')
-BUCKET = os.getenv('AMAZON_BUCKET')
+BUCKET = 'rpreview-images'
 
 
 def upload_to_aws(fp, s3_file_name):

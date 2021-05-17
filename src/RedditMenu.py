@@ -93,9 +93,14 @@ class RedditMenu(menus.Menu):
         elif hasattr(post, "crosspost_parent"):
             crosspost = await self.reddit.submission(id=post.crosspost_parent.split("_")[1])
             desc += '\nCrosspost from:\nhttps://reddit.com' + crosspost.permalink
+        elif hasattr(post, "gallery_data"):
+            if 'caption' in post.gallery_data['items'][0]:
+                desc += post.gallery_data['items'][0]['caption']
+
+            iurl = post.media_metadata[post.gallery_data['items'][0]['media_id']]['s']['u']
+            title += " [GALLERY]"
         elif 'link' in post_hint:
-            desc += f"\n[**LINK**]({post.url_overridden_by_dest})"
-        # TODO: Support gallery data (multiple images in reddit)
+            desc += f"\n{post.url_overridden_by_dest}"
 
         if len(title) > 120:
             title = title[:117] + '...'

@@ -29,7 +29,6 @@ class RoleManager(commands.Cog):
         await ctx.send("Role change successful!")
 
     @commands.command(aliases=['remove'])
-    @commands.has_any_role("Kingfishers", "Big Fish")
     async def unassign(self, ctx, *, role: discord.Role):
         if role.name not in role_names:
             return await ctx.send("I cannot remove this role!")
