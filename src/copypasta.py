@@ -39,5 +39,9 @@ sat_copypasta = "Personally, I think that instead of removing the SAT scores for
                 "important. Anyway, my point here is that UIUC should remove all programs except ECE, Engineering, " \
                 "and maybe CS. "
 
+wifi_copypasta = 'So I am an incoming freshman and my reliable friend at uiuc currently told me that the wifi network gets shut off from 8 pm to 6 am, and that in order to restrict people from using their own routers/hotspots, they drive around in those "radio tracing vans" like in spy movies to catch people using their own routers during those hours. So is there any way to know when the vans are gonna pull up? Maybe there\'s a pattern or someone put together a map? I just wanna be able to switch off my phone when the wifi tracing vans pull up to my dorm building so I don\'t get caught.'
+
+
 copypasta_dict = dict.fromkeys(['ece', 'eceb', 'ce', 'ee'], ece_copypasta)
 copypasta_dict.update(dict.fromkeys(['SAT', 'ACT'], sat_copypasta))
+copypasta_dict.update(dict.fromkeys(['wifi', 'wifi search', 'van'], wifi_copypasta))
