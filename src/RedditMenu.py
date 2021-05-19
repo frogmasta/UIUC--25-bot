@@ -113,7 +113,7 @@ class RedditMenu(menus.Menu):
         embed.add_field(name='**Comments**', value=post.num_comments, inline=True)
         embed.add_field(name='**Upvote Ratio**', value=f'{int(post.upvote_ratio * 100)}%', inline=True)
 
-        if desc:
+        if desc.strip():
             embed.add_field(name='_ _', value=desc)
         if iurl:
             embed.set_image(url=iurl)
