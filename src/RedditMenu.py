@@ -1,3 +1,4 @@
+import datetime
 import pathlib
 import re
 from math import floor
@@ -51,27 +52,20 @@ class RedditMenu(menus.Menu):
         if 1 <= self._page + increment <= self._maxPages:
             self._page += increment
             await self.generate_embed()
+            await self.ctx.send(embed=self._embed)
             await self.message.edit(embed=self._embed)
 
     async def generate_embed(self):
+        # Initialization
         msg = None
         post = self.submissions[self._page - 1]
 
-        if post.author:
-            await post.author.load()
-            author_name = post.author.name
-            if hasattr(post.author, 'is_suspended') and post.author.is_suspended:
-                author_icon = DEFAULT_ICON
-            else:
-                author_icon = post.author.icon_img
-        else:
-            author_name = '[deleted]'
-            author_icon = DEFAULT_ICON
+        author_name, author_icon = await self.get_author_info(post.author)
 
         title = post.title
-        desc = f'Score: {post.score} | Comments: {post.num_comments} | Upvote Ratio: {int(post.upvote_ratio * 100)}%\n'
+        desc = ''
 
-        # Distinguish between text, image, and cross posts
+        # Modify parameters according to post type
         post_hint = post.__dict__.get('post_hint', '')
         urllist = self.urls_in_selftext(post.selftext)
         iurl = None
@@ -102,28 +96,32 @@ class RedditMenu(menus.Menu):
         elif 'link' in post_hint:
             desc += f"\n{post.url_overridden_by_dest}"
 
+        # Keep everything within discord limits
         if len(title) > 120:
             title = title[:117] + '...'
-        if len(desc) > 2000:
-            desc = desc[0:1997] + "..."
+        if len(desc) > 1024:
+            desc = desc[0:1021] + "..."
 
-        embed = discord.Embed(title=title, description=desc, color=0xFF4500,
-                              url="https://reddit.com" + post.permalink)
+        # Rendering embed with all the information
+        embed = discord.Embed(title=title, color=0xFF4500, url="https://reddit.com" + post.permalink,
+                              timestamp=self.get_date_posted(post))
+
         embed.set_author(name=author_name, icon_url=author_icon, url=f"https://reddit.com/user/{author_name}")
-        embed.set_footer(text=f'Fresh from r/{self.sub} | Page {self._page}/{self._maxPages}',
+        embed.set_footer(text=f'r/{self.sub} • Page {self._page}/{self._maxPages}',
                          icon_url=self.sub.community_icon)
-        if iurl is not None:
+
+        embed.add_field(name='**Score**', value=post.score, inline=True)
+        embed.add_field(name='**Comments**', value=post.num_comments, inline=True)
+        embed.add_field(name='**Upvote Ratio**', value=f'{int(post.upvote_ratio * 100)}%', inline=True)
+
+        if desc:
+            embed.add_field(name='_ _', value=desc)
+        if iurl:
             embed.set_image(url=iurl)
 
+        # Clean-up and return
         self._embed = embed
         return msg
-
-    @staticmethod
-    def loading_embed():
-        lgif = 'https://i.ibb.co/qJCSkf2/lgif.gif'
-        embed = discord.Embed(title='Loading...', color=0xFF4500)
-        embed.set_image(url=lgif)
-        return embed
 
     @staticmethod
     async def preview_image_url(post, name_of_file):
@@ -157,6 +155,29 @@ class RedditMenu(menus.Menu):
         return 'https://rpreview-images.s3.us-east-2.amazonaws.com/' + name_of_file
 
     @staticmethod
+    async def get_author_info(author):
+        if not author:
+            return '[deleted]', DEFAULT_ICON
+
+        await author.load()
+        author_name = author.name
+        author_icon = DEFAULT_ICON if hasattr(author, 'is_suspended') and author.is_suspended else author.icon_img
+
+        return author_name, author_icon
+
+    @staticmethod
+    def loading_embed():
+        lgif = 'https://i.ibb.co/qJCSkf2/lgif.gif'
+        embed = discord.Embed(title='Loading...', color=0xFF4500)
+        embed.set_image(url=lgif)
+        return embed
+
+    @staticmethod
     def urls_in_selftext(text):
         urllist = re.findall(r'(https?://preview.redd.it[^\s]+)', text)
         return urllist
+
+    @staticmethod
+    def get_date_posted(submission):
+        time = submission.created
+        return datetime.datetime.fromtimestamp(time)

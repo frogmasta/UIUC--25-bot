@@ -6,6 +6,7 @@ from discord import utils
 from discord.ext import commands
 
 from src.BasicMenu import RoleMenu
+from src.help_descriptions import assign_help, unassign_help, stats_help, students_help, majors_help
 from src.role_list import role_names
 
 
@@ -13,7 +14,7 @@ class RoleManager(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=['add'])
+    @commands.command(aliases=['add'], **assign_help)
     @commands.has_any_role("Kingfishers", "Big Fish")
     async def assign(self, ctx, *, role: discord.Role):
         if role.name not in role_names:
@@ -28,7 +29,7 @@ class RoleManager(commands.Cog):
 
         await ctx.send("Role change successful!")
 
-    @commands.command(aliases=['remove'])
+    @commands.command(aliases=['remove'], **unassign_help)
     async def unassign(self, ctx, *, role: discord.Role):
         if role.name not in role_names:
             return await ctx.send("I cannot remove this role!")
@@ -42,7 +43,7 @@ class RoleManager(commands.Cog):
 
         await ctx.send("Role removal successful!")
 
-    @commands.command()
+    @commands.command(**students_help)
     async def students(self, ctx, *, role: discord.Role):
         people = list(filter(lambda member: role in member.roles, ctx.guild.members))
         data = [f"{person.mention}\n↳ {person}" for person in people]
@@ -54,7 +55,7 @@ class RoleManager(commands.Cog):
             if isinstance(err, ValueError):
                 await ctx.send('There is nobody with this major in the server!')
 
-    @commands.command(aliases=['roles'])
+    @commands.command(aliases=['roles'], **majors_help)
     async def majors(self, ctx, page=1):
         try:
             menu = RoleMenu("Majors", role_names, page)
@@ -62,7 +63,7 @@ class RoleManager(commands.Cog):
         except IndexError:
             await ctx.send("The page number you specified is out of bounds!")
 
-    @commands.command()
+    @commands.command(**stats_help)
     async def stats(self, ctx, page=1):
         role_count = get_role_count(ctx)
         try:
