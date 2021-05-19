@@ -40,7 +40,8 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    message.content = sanitize_mentions(message.content)
+    # Simple fix to the @everyone incident (circa 5/19/2021)
+    message.content = message.clean_content
 
     # Copypasta handler (and gay anime gifs ofc)
     contents = message.content.split()
@@ -71,10 +72,6 @@ async def on_command_error(ctx, error):
         return
 
     raise error
-
-
-def sanitize_mentions(text):
-    return text.replace("@everyone", "everyone").replace("@here", "here")
 
 
 # Run bot
