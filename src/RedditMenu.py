@@ -52,7 +52,6 @@ class RedditMenu(menus.Menu):
         if 1 <= self._page + increment <= self._maxPages:
             self._page += increment
             await self.generate_embed()
-            await self.ctx.send(embed=self._embed)
             await self.message.edit(embed=self._embed)
 
     async def generate_embed(self):
