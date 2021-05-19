@@ -30,7 +30,7 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    # Copypasta handler
+    # Copypasta handler (and gay anime gifs ofc)
     contents = message.content.split()
     for word in contents:
         if word.lower() in copypasta_dict or word in copypasta_dict:

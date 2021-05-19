@@ -6,6 +6,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from src.RedditMenu import RedditMenu
+from src.help_descriptions import reddit_help, meme_help
 
 load_dotenv()
 
@@ -22,8 +23,7 @@ class DiscordReddit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(brief="It's time to c-c-c-c-cringe",
-                      description="I don't know if it's dank, but it's definitely a meme")
+    @commands.command(**meme_help)
     async def meme(self, ctx, *args):
         options = self.reddit_arg_parser(args)
         options['sub'] = 'memes'
@@ -32,9 +32,7 @@ class DiscordReddit(commands.Cog):
         rmenu = RedditMenu(reddit, submissions, sub)
         await rmenu.start(ctx)
 
-    @commands.command(brief="Shitty reddit in discord",
-                      description="Why use reddit when you can use shitty reddit?",
-                      aliases=['redfetch', 'subreddit', 'sub'])
+    @commands.command(aliases=['redfetch', 'subreddit', 'sub'], **reddit_help)
     async def reddit(self, ctx, *args):
         options = self.reddit_arg_parser(args)
 
