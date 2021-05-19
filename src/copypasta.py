@@ -46,7 +46,13 @@ wifi_copypasta = 'So I am an incoming freshman and my reliable friend at uiuc cu
                  'gonna pull up? Maybe there\'s a pattern or someone put together a map? I just wanna be able to ' \
                  'switch off my phone when the wifi tracing vans pull up to my dorm building so I don\'t get caught. '
 
+goku_gay = 'https://tenor.com/view/goku-vegeta-gay-dragon-ball-z-gif-14784277'
+hxh_gay = 'https://tenor.com/view/hxh-hunter-x-hunter-gay-gay-gay-pride-anime-gay-gif-17315206'
+mha_gay = 'https://tenor.com/view/katsuki-bakugo-katsuki-bakugo-bakugou-my-hero-academia-gif-16800168'
 
 copypasta_dict = dict.fromkeys(['ece', 'eceb', 'ce', 'ee'], ece_copypasta)
 copypasta_dict.update(dict.fromkeys(['SAT', 'ACT'], sat_copypasta))
 copypasta_dict.update(dict.fromkeys(['wifi', 'wifi search', 'van'], wifi_copypasta))
+copypasta_dict.update(dict.fromkeys(['goku', 'vegeta', 'dragon', 'ball'], goku_gay))
+copypasta_dict.update(dict.fromkeys(['hxh', 'hunterxhunter', 'gon', 'killua'], hxh_gay))
+copypasta_dict.update(dict.fromkeys(['deku', 'bakugo', 'mha'], mha_gay))

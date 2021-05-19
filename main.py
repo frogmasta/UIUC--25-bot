@@ -30,7 +30,7 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    # Copypasta handler
+    # Copypasta handler (and gay anime gifs ofc)
     contents = message.content.split()
     for word in contents:
         if word.lower() in copypasta_dict or word in copypasta_dict:
@@ -38,23 +38,6 @@ async def on_message(message):
                 msg_parts = copypasta_dict[word.lower()].split('\n')
             except KeyError:
                 msg_parts = copypasta_dict[word].split('\n')
-
-            for part in msg_parts:
-                await message.channel.send(part)
-
-            break
-
-    # Process other commands if applicable
-    await bot.process_commands(message)
-    
-     # Animegay handler
-    contents = message.content.split()
-    for word in contents:
-        if word.lower() in animegay_dict or word in animegay_dict:
-            try:
-                msg_parts = animegay_dict[word.lower()].split('\n')
-            except KeyError:
-                msg_parts = animegay_dict[word].split('\n')
 
             for part in msg_parts:
                 await message.channel.send(part)
