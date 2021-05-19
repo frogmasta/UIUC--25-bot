@@ -46,6 +46,23 @@ async def on_message(message):
 
     # Process other commands if applicable
     await bot.process_commands(message)
+    
+     # Animegay handler
+    contents = message.content.split()
+    for word in contents:
+        if word.lower() in animegay_dict or word in animegay_dict:
+            try:
+                msg_parts = animegay_dict[word.lower()].split('\n')
+            except KeyError:
+                msg_parts = animegay_dict[word].split('\n')
+
+            for part in msg_parts:
+                await message.channel.send(part)
+
+            break
+
+    # Process other commands if applicable
+    await bot.process_commands(message)
 
 
 # Command error handler
