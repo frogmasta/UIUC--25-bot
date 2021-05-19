@@ -16,6 +16,16 @@ intents = discord.Intents.all()
 activity = discord.Activity(type=discord.ActivityType.listening, name="i-")
 bot = commands.Bot(command_prefix='i-', activity=activity, status=discord.Status.online, intents=intents)
 
+# Load extensions/cogs
+path = pathlib.Path(__file__).parent
+for cog in os.listdir(path / "cogs"):
+    if cog.endswith('.py'):
+        try:
+            bot.load_extension('cogs.' + cog.removesuffix('.py'))
+        except Exception as e:
+            print("There has been an error loading a cog")
+            raise e
+
 
 # Tells when bot is ready
 @bot.event
@@ -29,6 +39,8 @@ async def on_message(message):
     # Don't call if message written by a bot
     if message.author.bot:
         return
+
+    message.content = sanitize_mentions(message.content)
 
     # Copypasta handler (and gay anime gifs ofc)
     contents = message.content.split()
@@ -61,15 +73,9 @@ async def on_command_error(ctx, error):
     raise error
 
 
-# Load extensions/cogs
-path = pathlib.Path(__file__).parent
-for cog in os.listdir(path / "cogs"):
-    if cog.endswith('.py'):
-        try:
-            bot.load_extension('cogs.' + cog.removesuffix('.py'))
-        except Exception as e:
-            print("There has been an error loading a cog")
-            raise e
+def sanitize_mentions(text):
+    return text.replace("@everyone", "everyone").replace("@here", "here")
+
 
 # Run bot
 bot.run(TOKEN)
