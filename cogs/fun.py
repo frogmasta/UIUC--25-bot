@@ -1,7 +1,10 @@
 import random
+import re
 
 from discord.ext import commands
 
+def ball_sanitize(text):
+    return re.sub("<@.*?>", "", text)
 
 class Fun(commands.Cog):
     def __init__(self, bot):
@@ -15,7 +18,7 @@ class Fun(commands.Cog):
                      'Ask again later', 'Better not tell you now', 'Cannot predict now', 'Concentrate and ask again',
                      'Don\'t count on it', 'My reply is no', 'My sources say no', 'Outlook not so good',
                      'Very doubtful']
-        await ctx.send(f'Question: {question} \nAnswer: {random.choice(responses)}')
+        await ctx.send(f'Question: {ball_sanitize(question)} \nAnswer: {random.choice(responses)}')
 
     @_8ball.error
     async def info_error(self, ctx, error):
@@ -25,3 +28,4 @@ class Fun(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Fun(bot))
+
