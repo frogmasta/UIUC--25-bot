@@ -45,7 +45,16 @@ class Fun(commands.Cog):
             "You must have been born on a highway, because that's where most accidents happen.",
             "Your momma is so ugly... she gotta be your momma.",
             "You are so ugly that when your mom dropped you off at school,she got a ticket for littering.",
-            "You're so fat Thanos had to snap twice"
+            "You're so fat, Thanos had to snap twice",
+            "If I looked like you, I would sue my parents.",
+            "If laughter is the best medicine, your face must be curing the world.",
+            "They say opposites attract. I hope you meet someone who is good-looking, intelligent, and cultured.",
+            "I'd slap you, but that would be animal abuse.",
+            "If ugly were a crime, you'd get a life sentence.",
+            "Have you been shopping lately? They're selling lives, you should go get one",
+            "How old are you? - Wait I shouldn't ask, you can't count that high.",
+            "You're like Monday mornings, nobody likes you",
+            "You're so fat, you could sell shade."
         ]
         selectedRoast = random.choice(roasts)
 
