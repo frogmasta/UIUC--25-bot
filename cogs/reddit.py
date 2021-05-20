@@ -25,23 +25,26 @@ class DiscordReddit(commands.Cog):
 
     @commands.command(**meme_help)
     async def meme(self, ctx, *args):
-        options = self.reddit_arg_parser(args)
-        options['sub'] = 'memes'
-
-        submissions, sub = await self.fetch_submissions(ctx, **options)
-        rmenu = RedditMenu(reddit, submissions, sub)
-        await rmenu.start(ctx)
+        await self.reddit_command(ctx, args, sub='memes')
 
     @commands.command(aliases=['redfetch', 'subreddit', 'sub'], **reddit_help)
     async def reddit(self, ctx, *args):
-        options = self.reddit_arg_parser(args)
+        await self.reddit_command(ctx, args)
 
-        submissions, sub = await self.fetch_submissions(ctx, **options)
+    async def reddit_command(self, ctx, args, **defaults):
+        options = await self.reddit_arg_parser(ctx, args)
+        for option_name in defaults:
+            options[option_name] = defaults[option_name]
+
+        try:
+            submissions, sub = await self.fetch_submissions(**options)
+        except ValueError as err:
+            return await ctx.send(err)
         rmenu = RedditMenu(reddit, submissions, sub)
         await rmenu.start(ctx)
 
     @staticmethod
-    async def fetch_submissions(ctx, sub, order, *, time='day', nsfw=False):
+    async def fetch_submissions(sub, order, *, time='day', nsfw=False):
         global reddit
 
         # Get subreddit
@@ -49,26 +52,26 @@ class DiscordReddit(commands.Cog):
             sub = await reddit.subreddit(sub, fetch=True)
         except Exception as e:
             if isinstance(e, asyncprawcore.Forbidden):
-                return await ctx.send(f"Subreddit **r/{sub}** is either private or quarantined 😃")
+                raise ValueError(f"Subreddit **r/{sub}** is either private or quarantined 😃")
             elif isinstance(e, asyncprawcore.NotFound) or isinstance(e, asyncprawcore.Redirect):
-                return await ctx.send(f"Subreddit **r/{sub}** could not be found 😭")
+                raise ValueError(f"Subreddit **r/{sub}** could not be found 😭")
 
         # NSFW check for subreddit
         if not nsfw and sub.over18:
-            return await ctx.send("You're attempting to fetch an NSFW sub in a non-NSFW channel -_-")
+            raise ValueError("You're attempting to fetch an NSFW sub in a non-NSFW channel -_-")
 
         # Order the result based on user input
         try:
             limit = 20
             sort_method = getattr(sub, order)
         except AttributeError:
-            return await ctx.send(f"Could not find a **{order}** order method!")
+            raise ValueError(f"Could not find a **{order}** order method!")
 
         if sort_method.__name__ == 'top':
             try:
                 submission_gen = sort_method(time, limit=limit)
             except ValueError:
-                return await ctx.send(f"Could not find a way to filter top by **{time}** 😐")
+                raise ValueError(f"Could not find a way to filter top by **{time}** 😐")
         else:
             submission_gen = sort_method(limit=limit)
 
@@ -81,13 +84,14 @@ class DiscordReddit(commands.Cog):
         return submissions, sub
 
     @staticmethod
-    def reddit_arg_parser(args):
+    async def reddit_arg_parser(ctx, args):
         defaults = {
             "sub": "UIUC",
             "order": "hot",
         }
 
         for option in args:
+            option = str(await commands.clean_content().convert(ctx, option))
             if option == 'random':
                 option = 'random_rising'
 

@@ -178,5 +178,5 @@ class RedditMenu(menus.Menu):
 
     @staticmethod
     def get_date_posted(submission):
-        time = submission.created
-        return datetime.datetime.fromtimestamp(time)
+        time = submission.created_utc
+        return datetime.datetime.utcfromtimestamp(time)
