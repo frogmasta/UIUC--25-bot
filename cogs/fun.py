@@ -61,6 +61,11 @@ class Fun(commands.Cog):
 
         await ctx.send("Hey " + mention + ": " + selectedRoast)
 
+    @roast.error
+    async def roast_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Please provide someone\'s name to roast!')
+
 
 def setup(bot):
     bot.add_cog(Fun(bot))
