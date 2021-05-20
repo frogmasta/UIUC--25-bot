@@ -10,7 +10,7 @@ class Fun(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=['8ball'], **_8ball_help)
-    async def _8ball(self, ctx, *, question):
+    async def _8ball(self, ctx, *, question: commands.clean_content):
         responses = ['It is certain', 'It is decidedly so', 'Without a doubt', 'Yes – definitely', 'You may rely on it',
                      'As I see it, yes', 'Most likely', 'Outlook good', 'Signs point to yes', 'Reply hazy',
                      'Try again',
@@ -23,17 +23,20 @@ class Fun(commands.Cog):
     async def _8ball_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Please provide a question for me to answer!')
-    
+
     @commands.command()
-    async def roast(ctx,name):
-        roasts =["You must be the arithmetic man; you add trouble, subtract pleasure, divide attention, and multiply ignorance.",
+    async def roast(self, ctx, *, name):
+        roasts = [
+            "You must be the arithmetic man; you add trouble, subtract pleasure, divide attention, and multiply "
+            "ignorance.",
             "You're so fat you need cheat codes to play Wii Fit.",
             "If you were twice as smart, you'd still be stupid.",
             "You're so ugly Hello Kitty said goodbye to you.",
             "Here's 20 cents, call all your friends and give me back the change.",
             "IF SHIT LOOKED AT YOU, IT WOULD CALL YOU DADDY.",
             "YO MAMA'S BREATH IS SO STANKY, SHE EATS ODOUR EATERS.",
-            "I hear when you were a child your mother wanted to hire somebody to take care of you, but the mafia wanted too much.",
+            "I hear when you were a child your mother wanted to hire somebody to take care of you, but the mafia wanted"
+            " too much.",
             "I could eat a bowl of alphabet soup and crap out a smarter comeback than what you just said.",
             "You're as ugly as a salad!",
             "You're a failed abortion whose birth certificate is an apology from the condom factory.",
@@ -42,11 +45,21 @@ class Fun(commands.Cog):
             "You must have been born on a highway, because that's where most accidents happen.",
             "Your momma is so ugly... she gotta be your momma.",
             "You are so ugly that when your mom dropped you off at school,she got a ticket for littering.",
-            "You're so fat Thanos had to snap twice"]
+            "You're so fat Thanos had to snap twice"
+        ]
+        selectedRoast = random.choice(roasts)
 
-        selectedRoast = roasts[random.randint(0,(len(roasts)-1))]
-        await ctx.send("Hey " + name + ": " + selectedRoast)
+        if ctx.message.mentions:
+            mention = await commands.clean_content().convert(ctx, name)
+            mention = mention.removeprefix('@')
+        else:
+            try:
+                member = await commands.MemberConverter().convert(ctx, name)
+                mention = member.mention
+            except commands.MemberNotFound:
+                mention = await commands.clean_content().convert(ctx, name)
 
+        await ctx.send("Hey " + mention + ": " + selectedRoast)
 
 
 def setup(bot):
